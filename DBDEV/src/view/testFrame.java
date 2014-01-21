@@ -9,8 +9,10 @@ import controller.Controller2;
 import javax.swing.table.*;
 import javax.swing.JOptionPane;
 import javax.swing.ListSelectionModel;
+import java.text.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import java.util.Calendar;
 import java.sql.*;
 import java.util.Vector;
 
@@ -36,25 +38,75 @@ public class testFrame extends javax.swing.JFrame {
         {
             @Override
             public void valueChanged(ListSelectionEvent event) {
-                int viewRow = studentTable.getSelectedRow();
-                Object selValueObj = studentTable.getValueAt(viewRow, 0);
-                int selValue = (Integer)selValueObj;
-                System.out.println("value changed!"+selValue);
-        
-        try  {
-            DefaultTableModel readingModel = (DefaultTableModel) readingTable.getModel();
-            ResultSet rsReading = controller.getStudentsOngoingCourses(selValue); 
-            readingTable.setModel(resultSetToTableModel(rsReading));
-            
-            DefaultTableModel readModel = (DefaultTableModel) readTable.getModel();
-            ResultSet rsRead = controller.getStudentResults(selValue);
-            readTable.setModel(resultSetToTableModel(rsRead));
 
+                try  {
+                    int viewRow = studentTable.getSelectedRow();
+                    System.out.println("viewRow: "+viewRow);
+                
+                    Object selValueObj = studentTable.getValueAt(viewRow, 0);
+                    int selValue = (Integer)selValueObj;
+                    System.out.println("value changed!"+selValue); 
+            
+                    DefaultTableModel readingModel = (DefaultTableModel) readingTable.getModel();
+                    ResultSet rsReading = controller.getStudentsOngoingCourses(selValue); 
+                    readingTable.setModel(resultSetToTableModel(rsReading));
+            
+                    DefaultTableModel readModel = (DefaultTableModel) readTable.getModel();
+                    ResultSet rsRead = controller.getStudentResults(selValue);
+                    readTable.setModel(resultSetToTableModel(rsRead)); 
         } catch (java.sql.SQLException e) {
             e.printStackTrace();
+        } catch (ArrayIndexOutOfBoundsException e) {
+            
         }
             } 
         });
+        
+        courseTable.getSelectionModel()
+                .addListSelectionListener(new ListSelectionListener()
+        {
+            @Override
+            public void valueChanged(ListSelectionEvent event) {
+
+                try  {
+                    int viewRow = courseTable.getSelectedRow();
+                    System.out.println("viewRow: "+viewRow);
+                
+                    Object selValueObj = courseTable.getValueAt(viewRow, 0);
+                    int selValue = (Integer)selValueObj;
+                    System.out.println("value changed!"+selValue); 
+            
+                    DefaultTableModel studentsInCourseModel = (DefaultTableModel) studentsInCourseTable.getModel();
+                    ResultSet rsStudents = controller.getReadingStudents(selValue); 
+                    studentsInCourseTable.setModel(resultSetToTableModel(rsStudents));
+                    
+                    DefaultTableModel pastStudentsInCourseModel = (DefaultTableModel) pastStudentsInCourseTable.getModel();
+                    ResultSet rsPastStudents = controller.getCourseResult(selValue); 
+                    pastStudentsInCourseTable.setModel(resultSetToTableModel(rsPastStudents));
+                    
+                    ResultSet rsAStudentsPercent = controller.getPercentage5Students(selValue);
+                    
+                    String arrAPercent = null;
+                        while (rsAStudentsPercent.next()) {
+                            String em = rsAStudentsPercent.getString("Percentage");
+                            arrAPercent = em.replace("\n", ",");
+                            System.out.println(arrAPercent);
+                        }
+                        
+                    double dAPercent = Double.parseDouble(arrAPercent);
+                    DecimalFormat df = new DecimalFormat("##.###");
+                    String aStudentsPercent = String.valueOf(df.format(dAPercent));
+                    
+                    highestGradeStudentsLbl.setText("A grade students: "+aStudentsPercent+"%");
+
+        } catch (java.sql.SQLException e) {
+            e.printStackTrace();
+        } catch (ArrayIndexOutOfBoundsException e) {
+            
+        }
+            } 
+        });
+        
     }
     /**
      * This method is called from within the constructor to initialize the form.
@@ -71,8 +123,15 @@ public class testFrame extends javax.swing.JFrame {
         jLabel3 = new javax.swing.JLabel();
         studentAddressField = new javax.swing.JTextField();
         addStudent = new javax.swing.JButton();
-        regStudentToCourseDialog = new javax.swing.JDialog();
-        jLabel4 = new javax.swing.JLabel();
+        addCourseDialog = new javax.swing.JDialog();
+        courseNameLbl = new javax.swing.JLabel();
+        courseNameField = new javax.swing.JTextField();
+        coursePointsLbl = new javax.swing.JLabel();
+        coursePointsField = new javax.swing.JTextField();
+        semesterLbl = new javax.swing.JLabel();
+        courseSemesterField = new javax.swing.JTextField();
+        addCourseFinalBtn = new javax.swing.JButton();
+        courseAddStatusLbl = new javax.swing.JLabel();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         jPanel1 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -92,6 +151,26 @@ public class testFrame extends javax.swing.JFrame {
         jLabel5 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
         jLabel7 = new javax.swing.JLabel();
+        gradeStudentOnCourse = new javax.swing.JButton();
+        jPanel3 = new javax.swing.JPanel();
+        jScrollPane4 = new javax.swing.JScrollPane();
+        courseTable = new javax.swing.JTable();
+        getCourseBtn = new javax.swing.JButton();
+        courseIdentField = new javax.swing.JTextField();
+        jLabel11 = new javax.swing.JLabel();
+        courseIDLabel = new javax.swing.JLabel();
+        studentsInCourseLabel = new javax.swing.JLabel();
+        jScrollPane5 = new javax.swing.JScrollPane();
+        studentsInCourseTable = new javax.swing.JTable();
+        getAllCoursesBtn = new javax.swing.JButton();
+        addCourseBtn = new javax.swing.JButton();
+        removeCourseBtn = new javax.swing.JButton();
+        jLabel4 = new javax.swing.JLabel();
+        jScrollPane6 = new javax.swing.JScrollPane();
+        pastStudentsInCourseTable = new javax.swing.JTable();
+        highestGradeStudentsLbl = new javax.swing.JLabel();
+        getCourseThroughputsBtn = new javax.swing.JButton();
+        showThroughputCb = new javax.swing.JCheckBox();
 
         addStudentDialog.setTitle("Add student");
         addStudentDialog.setMinimumSize(new java.awt.Dimension(230, 230));
@@ -138,23 +217,63 @@ public class testFrame extends javax.swing.JFrame {
                 .addContainerGap(16, Short.MAX_VALUE))
         );
 
-        jLabel4.setText("jLabel4");
+        addCourseDialog.setMinimumSize(new java.awt.Dimension(270, 300));
 
-        javax.swing.GroupLayout regStudentToCourseDialogLayout = new javax.swing.GroupLayout(regStudentToCourseDialog.getContentPane());
-        regStudentToCourseDialog.getContentPane().setLayout(regStudentToCourseDialogLayout);
-        regStudentToCourseDialogLayout.setHorizontalGroup(
-            regStudentToCourseDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(regStudentToCourseDialogLayout.createSequentialGroup()
-                .addGap(151, 151, 151)
-                .addComponent(jLabel4)
-                .addContainerGap(204, Short.MAX_VALUE))
+        courseNameLbl.setText("Course name:");
+
+        coursePointsLbl.setText("Course points:");
+
+        semesterLbl.setText("Semester (VT/HT):");
+
+        addCourseFinalBtn.setText("Add");
+        addCourseFinalBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addCourseFinalBtnActionPerformed(evt);
+            }
+        });
+
+        courseAddStatusLbl.setText("Status: nothing added");
+
+        javax.swing.GroupLayout addCourseDialogLayout = new javax.swing.GroupLayout(addCourseDialog.getContentPane());
+        addCourseDialog.getContentPane().setLayout(addCourseDialogLayout);
+        addCourseDialogLayout.setHorizontalGroup(
+            addCourseDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(addCourseDialogLayout.createSequentialGroup()
+                .addGap(20, 20, 20)
+                .addGroup(addCourseDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(addCourseDialogLayout.createSequentialGroup()
+                        .addGap(6, 6, 6)
+                        .addComponent(courseAddStatusLbl))
+                    .addComponent(addCourseFinalBtn)
+                    .addGroup(addCourseDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addComponent(semesterLbl)
+                        .addComponent(coursePointsLbl)
+                        .addComponent(courseNameLbl)
+                        .addComponent(courseNameField)
+                        .addComponent(coursePointsField)
+                        .addComponent(courseSemesterField, javax.swing.GroupLayout.DEFAULT_SIZE, 225, Short.MAX_VALUE)))
+                .addContainerGap(25, Short.MAX_VALUE))
         );
-        regStudentToCourseDialogLayout.setVerticalGroup(
-            regStudentToCourseDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(regStudentToCourseDialogLayout.createSequentialGroup()
-                .addGap(89, 89, 89)
-                .addComponent(jLabel4)
-                .addContainerGap(195, Short.MAX_VALUE))
+        addCourseDialogLayout.setVerticalGroup(
+            addCourseDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(addCourseDialogLayout.createSequentialGroup()
+                .addGap(19, 19, 19)
+                .addComponent(courseNameLbl)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(courseNameField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(coursePointsLbl)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(coursePointsField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(semesterLbl)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(courseSemesterField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(addCourseFinalBtn)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(courseAddStatusLbl)
+                .addContainerGap(8, Short.MAX_VALUE))
         );
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -184,7 +303,7 @@ public class testFrame extends javax.swing.JFrame {
             }
         });
 
-        jLabel1.setText("Student ID:");
+        jLabel1.setText("Student ID/name/address:");
 
         addStudentBtn.setText("Add student");
         addStudentBtn.addActionListener(new java.awt.event.ActionListener() {
@@ -242,9 +361,16 @@ public class testFrame extends javax.swing.JFrame {
 
         jLabel5.setText("Ongoing courses");
 
-        jLabel6.setText("Finished courses");
+        jLabel6.setText("Completed courses");
 
         jLabel7.setText("Students");
+
+        gradeStudentOnCourse.setText("Grade student on course");
+        gradeStudentOnCourse.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                gradeStudentOnCourseActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -269,13 +395,15 @@ public class testFrame extends javax.swing.JFrame {
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 472, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel7))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                    .addComponent(jLabel5)
-                    .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 242, Short.MAX_VALUE)
-                    .addComponent(jLabel6)
-                    .addComponent(unregStudentFrCourseBtn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap(10, Short.MAX_VALUE))
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addComponent(jLabel5)
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                        .addComponent(unregStudentFrCourseBtn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                        .addComponent(gradeStudentOnCourse, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jLabel6))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -306,24 +434,209 @@ public class testFrame extends javax.swing.JFrame {
                                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 167, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(unregStudentFrCourseBtn)
-                                .addGap(33, 33, 33)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(gradeStudentOnCourse)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(jLabel6)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 167, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addComponent(jScrollPane1)))))
         );
 
-        jTabbedPane1.addTab("Students", jPanel1);
+        jTabbedPane1.addTab("Student management", jPanel1);
+
+        courseTable.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Course ID", "Name", "Points"
+            }
+        ));
+        courseTable.setSize(new java.awt.Dimension(400, 60));
+        jScrollPane4.setViewportView(courseTable);
+
+        getCourseBtn.setText("Find");
+        getCourseBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                getCourseBtnActionPerformed(evt);
+            }
+        });
+
+        jLabel11.setText("Courses");
+
+        courseIDLabel.setText("Course ID/name/semester:");
+
+        studentsInCourseLabel.setText("Current students in selected course");
+
+        studentsInCourseTable.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null},
+                {null, null},
+                {null, null},
+                {null, null}
+            },
+            new String [] {
+                "StudentID", "Name"
+            }
+        ));
+        jScrollPane5.setViewportView(studentsInCourseTable);
+
+        getAllCoursesBtn.setText("Get all courses");
+        getAllCoursesBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                getAllCoursesBtnActionPerformed(evt);
+            }
+        });
+
+        addCourseBtn.setText("Add course");
+        addCourseBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addCourseBtnActionPerformed(evt);
+            }
+        });
+
+        removeCourseBtn.setText("Remove course");
+        removeCourseBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                removeCourseBtnActionPerformed(evt);
+            }
+        });
+
+        jLabel4.setText("Past students in selected course");
+
+        pastStudentsInCourseTable.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null},
+                {null, null, null},
+                {null, null, null},
+                {null, null, null}
+            },
+            new String [] {
+                "CourseID", "Name", "Grade"
+            }
+        ));
+        pastStudentsInCourseTable.setMaximumSize(new java.awt.Dimension(227, 64));
+        jScrollPane6.setViewportView(pastStudentsInCourseTable);
+
+        highestGradeStudentsLbl.setText("A grade students:");
+
+        getCourseThroughputsBtn.setText("Get all course throughputs");
+        getCourseThroughputsBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                getCourseThroughputsBtnActionPerformed(evt);
+            }
+        });
+
+        showThroughputCb.setText("Show course throughput");
+        showThroughputCb.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                showThroughputCbActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
+        jPanel3.setLayout(jPanel3Layout);
+        jPanel3Layout.setHorizontalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(highestGradeStudentsLbl)
+                    .addComponent(showThroughputCb))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 520, Short.MAX_VALUE)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 221, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jScrollPane6, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 240, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(getAllCoursesBtn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(addCourseBtn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(removeCourseBtn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(getCourseThroughputsBtn, javax.swing.GroupLayout.DEFAULT_SIZE, 228, Short.MAX_VALUE))
+                .addGap(0, 0, Short.MAX_VALUE))
+            .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(jPanel3Layout.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addGroup(jPanel3Layout.createSequentialGroup()
+                            .addComponent(courseIdentField, javax.swing.GroupLayout.PREFERRED_SIZE, 126, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(getCourseBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 89, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(jPanel3Layout.createSequentialGroup()
+                            .addGap(8, 8, 8)
+                            .addComponent(courseIDLabel)))
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 472, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel11, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(jPanel3Layout.createSequentialGroup()
+                            .addComponent(studentsInCourseLabel)
+                            .addGap(0, 17, Short.MAX_VALUE))
+                        .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+                    .addContainerGap()))
+        );
+        jPanel3Layout.setVerticalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addGap(61, 61, 61)
+                .addComponent(getAllCoursesBtn)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(addCourseBtn)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(removeCourseBtn)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addGap(46, 46, 46)
+                        .addComponent(jLabel4)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jScrollPane6, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(getCourseThroughputsBtn)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(showThroughputCb)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 223, Short.MAX_VALUE)
+                        .addComponent(highestGradeStudentsLbl)))
+                .addContainerGap())
+            .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(jPanel3Layout.createSequentialGroup()
+                    .addGap(7, 7, 7)
+                    .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(jPanel3Layout.createSequentialGroup()
+                            .addComponent(studentsInCourseLabel)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addGroup(jPanel3Layout.createSequentialGroup()
+                                    .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 167, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addGap(0, 267, Short.MAX_VALUE))
+                                .addComponent(jScrollPane4)))
+                        .addGroup(jPanel3Layout.createSequentialGroup()
+                            .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addComponent(courseIDLabel)
+                                .addComponent(jLabel11))
+                            .addGap(2, 2, 2)
+                            .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addComponent(courseIdentField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(getCourseBtn))
+                            .addGap(0, 0, Short.MAX_VALUE)))
+                    .addContainerGap()))
+        );
+
+        jTabbedPane1.addTab("Course management", jPanel3);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jTabbedPane1)
+            .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 979, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 507, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 515, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
 
         pack();
@@ -332,39 +645,6 @@ public class testFrame extends javax.swing.JFrame {
     
 
     
-    private void getAllStudentsBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_getAllStudentsBtnActionPerformed
-        // Append a row 
-        DefaultTableModel studentModel = (DefaultTableModel) studentTable.getModel();
-        try  {
-            ResultSet rs = controller.getAllStudents();
-       /*if(rs.next()) {
-        studentModel.addRow(new Object[]{rs.getString(1), rs.getString(2), rs.getString(3)});
-        } */
-            studentTable.setModel(resultSetToTableModel(rs));
-            /*studentModel.addRow(new Object[]{"Column 1", "Column 2", "Column 3"});*/
-        } catch (java.sql.SQLException e) {
-            e.printStackTrace();
-        }
-    }//GEN-LAST:event_getAllStudentsBtnActionPerformed
-
-    private void getSingleStudentBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_getSingleStudentBtnActionPerformed
-        DefaultTableModel studentModel = (DefaultTableModel) studentTable.getModel();    
-        try {
-            String studentID = studentIdentField.getText();
-            int intStudentID = Integer.parseInt(studentID);
-            ResultSet rs = controller.getStudent(intStudentID);
-       if(rs.next()) {
-            studentModel.addRow(new Object[]{rs.getString(1), rs.getString(2), rs.getString(3)});
-       } 
-        } catch (java.sql.SQLException e) {
-            e.printStackTrace();
-        }
-    }//GEN-LAST:event_getSingleStudentBtnActionPerformed
-
-    private void addStudentBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addStudentBtnActionPerformed
-        addStudentDialog.setVisible(true);
-    }//GEN-LAST:event_addStudentBtnActionPerformed
-
     private void addStudentActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addStudentActionPerformed
         String studentName = studentNameField.getText();
         String studentAddress = studentAddressField.getText();
@@ -375,61 +655,51 @@ public class testFrame extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_addStudentActionPerformed
 
-    private void removeStudentBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeStudentBtnActionPerformed
-
-        String removedStudent = JOptionPane
-                .showInputDialog(null, "Enter student ID for student REMOVAL (safety measure):", "Remove student", JOptionPane.PLAIN_MESSAGE); 
+    private void getCourseBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_getCourseBtnActionPerformed
         try {
-            int intRemovedStudent = Integer.parseInt(removedStudent);
-            controller.deleteStudent(intRemovedStudent);
+            String courseInfo = courseIdentField.getText();
+
+            courseTable.getSelectionModel().clearSelection();
+            ResultSet rs = controller.findCourse(courseInfo);
+            courseTable.setModel(resultSetToTableModel(rs));
+
         } catch (java.sql.SQLException e) {
             e.printStackTrace();
-        } catch (NumberFormatException e) {
-            System.out.println("This is not a number!");
-            System.out.println(e.getMessage());
         }
-    }//GEN-LAST:event_removeStudentBtnActionPerformed
+    }//GEN-LAST:event_getCourseBtnActionPerformed
 
-    private void regStudentToCourseBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_regStudentToCourseBtnActionPerformed
-            
+    private void gradeStudentOnCourseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_gradeStudentOnCourseActionPerformed
         try {
-            int rowIndex = studentTable.getSelectedRow();
-            int colIndex = studentTable.getSelectedColumn();
-            Object selValueObj = studentTable.getValueAt(rowIndex, 0);
-            String selValue = selValueObj.toString();
-            System.out.println(selValue);
-            
-            String courseCode = JOptionPane
-                .showInputDialog(null, "Enter course code for addition of student "+selValue+":", "Register student to course", JOptionPane.PLAIN_MESSAGE); 
-            
-            int intSelValue = Integer.parseInt(selValue);
-            int intCourseCode = Integer.parseInt(courseCode);
-            controller.addStudentReading(intSelValue, intCourseCode);
+            int courseRowIndex = readingTable.getSelectedRow();
+            Object selCourseIDObj = readingTable.getValueAt(courseRowIndex, 0);
+            int selCourse = (Integer)selCourseIDObj;
+
+            int studentRowIndex = studentTable.getSelectedRow();
+            Object selStudentObj = studentTable.getValueAt(studentRowIndex, 0);
+            int selStudent = (Integer)selStudentObj;
+
+            String grade = JOptionPane
+            .showInputDialog(null, "Enter grade for student "+selStudent+" in course "+selCourse, "Grade student", JOptionPane.PLAIN_MESSAGE);
+            int intGrade = Integer.parseInt(grade);
+            controller.removeStudentReading(selStudent, selCourse);
+            controller.addStudentRead(selStudent, selCourse, intGrade);
         } catch (java.sql.SQLException e) {
             e.printStackTrace();
-        } catch (NumberFormatException e) {
-            System.out.println("This is not a number!");
-            System.out.println(e.getMessage());
-        } catch (ArrayIndexOutOfBoundsException e) {
-            JOptionPane.showMessageDialog(null, "Select a student first from the table!", "Error", JOptionPane.PLAIN_MESSAGE);
-            System.out.println("Index out of bounds!");
-            System.out.println(e.getMessage());
         }
-        
-    }//GEN-LAST:event_regStudentToCourseBtnActionPerformed
+    }//GEN-LAST:event_gradeStudentOnCourseActionPerformed
 
     private void unregStudentFrCourseBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_unregStudentFrCourseBtnActionPerformed
         try {
             int courseRowIndex = readingTable.getSelectedRow();
             Object selCourseIDObj = readingTable.getValueAt(courseRowIndex, 0);
             int selCourse = (Integer)selCourseIDObj;
-            
+
             int studentRowIndex = studentTable.getSelectedRow();
             Object selStudentObj = studentTable.getValueAt(studentRowIndex, 0);
             int selStudent = (Integer)selStudentObj;
 
             controller.removeStudentReading(selStudent, selCourse);
-            
+
         } catch (java.sql.SQLException e) {
             e.printStackTrace();
         } catch (ArrayIndexOutOfBoundsException e) {
@@ -438,6 +708,253 @@ public class testFrame extends javax.swing.JFrame {
             System.out.println(e.getMessage());
         }
     }//GEN-LAST:event_unregStudentFrCourseBtnActionPerformed
+    
+    private String NumberToSemester(int nr) {
+        String semester = null;
+        
+        if ((nr >= 1) && (nr <= 6)) {
+            semester = "HT";
+        } else if ((nr >= 9) && (nr <= 12)) {
+            semester = "VT";
+        }
+        
+        return semester;
+    }
+    
+    private String getSemester() {
+        String timeStamp = new SimpleDateFormat("yyyy-MM-dd.").format(Calendar.getInstance().getTime());
+        String semester = null;
+        String currentMonth = timeStamp.substring(5, 7);
+        
+        /*System.out.print("current date: "+timeStamp);*/
+        String temp = currentMonth.substring(0, 1);
+        
+        if (temp.equals("0")) {
+            
+            String singleNr = currentMonth.substring(0, 2);
+            int intSingleNr = Integer.parseInt(singleNr);
+            System.out.print("current month: "+intSingleNr);
+            
+            semester = NumberToSemester(intSingleNr);
+            
+        } else {
+            int nr = Integer.parseInt(currentMonth);
+            semester = NumberToSemester(nr);
+        }
+        
+        return semester;
+    }
+    
+    private int rsToInt(ResultSet rSet, String column) {
+        int returnInt = 0;
+        
+        try {
+
+        String tempString = null;
+        while (rSet.next()) {
+            String em2 = rSet.getString(column);
+            tempString = em2.replace("\n", ",");
+            System.out.println(tempString);
+        }
+        
+        returnInt = Integer.parseInt(tempString);
+
+        } catch (java.sql.SQLException e) {
+            e.printStackTrace();
+        }
+        return returnInt;
+        
+    }
+    
+    private void regStudentToCourseBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_regStudentToCourseBtnActionPerformed
+
+            try {
+            int rowIndex = studentTable.getSelectedRow();
+            Object selValueObj = studentTable.getValueAt(rowIndex, 0);
+
+            String selValue = selValueObj.toString();
+
+            String courseCode = JOptionPane
+            .showInputDialog(null, "Enter course code for addition of student "+selValue+":", "Register student to course", JOptionPane.PLAIN_MESSAGE);
+
+            int intSelValue = Integer.parseInt(selValue);
+            int intCourseCode = Integer.parseInt(courseCode);
+            
+            int studentPoints = 0;
+            int coursePoints = 0;
+            
+            String semester = getSemester();
+            System.out.println("semester: "+semester);
+            
+            try {
+                ResultSet rsPoints = controller.getStudentsOngoingPoints(intSelValue, semester);
+                studentPoints = rsToInt(rsPoints, "Points");
+            } catch (java.sql.SQLException e) {
+                e.printStackTrace();
+            }
+
+            try {
+                ResultSet rsCoursePoints = controller.getCoursePoints(intCourseCode);
+                coursePoints = rsToInt(rsCoursePoints, "Points");
+            } catch (java.sql.SQLException e) {
+                e.printStackTrace();
+            }
+            
+            
+            /*int coursePoints = rsToInt(rsCoursePoints, "Points");*/
+            
+            if (studentPoints > (45-coursePoints)) {
+                JOptionPane.showMessageDialog(null, "You cannot register for more than 45hp/semester", "Error", JOptionPane.PLAIN_MESSAGE);
+            } else {
+                /*controller.addStudentReading(intSelValue, intCourseCode);*/
+            }
+            
+            /*controller.addStudentReading(intSelValue, intCourseCode);*/
+        } catch (NumberFormatException e) {
+            System.out.println("This is not a number!");
+            System.out.println(e.getMessage());
+        } catch (ArrayIndexOutOfBoundsException e) {
+            JOptionPane.showMessageDialog(null, "Select a student first from the table!", "Error", JOptionPane.PLAIN_MESSAGE);
+            System.out.println("Index out of bounds!");
+            System.out.println(e.getMessage());
+        }
+
+    }//GEN-LAST:event_regStudentToCourseBtnActionPerformed
+
+    private void removeStudentBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeStudentBtnActionPerformed
+
+        String removedStudent = JOptionPane
+        .showInputDialog(null, "Enter student ID for student REMOVAL (safety measure):", "Remove student", JOptionPane.PLAIN_MESSAGE);
+        try {
+            int intRemovedStudent = Integer.parseInt(removedStudent);
+            controller.deleteStudent(intRemovedStudent);
+
+        } catch (java.sql.SQLException e) {
+            e.printStackTrace();
+        } catch (NumberFormatException e) {
+            System.out.println("This is not a number!");
+            System.out.println(e.getMessage());
+        }
+    }//GEN-LAST:event_removeStudentBtnActionPerformed
+
+    private void addStudentBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addStudentBtnActionPerformed
+        addStudentDialog.setVisible(true);
+    }//GEN-LAST:event_addStudentBtnActionPerformed
+
+    private void getSingleStudentBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_getSingleStudentBtnActionPerformed
+
+        try {
+            String studentInfo = studentIdentField.getText();
+           
+
+
+            studentTable.getSelectionModel().clearSelection();
+            ResultSet rs = controller.searchForStudent(studentInfo);
+            studentTable.setModel(resultSetToTableModel(rs));
+
+        } catch (java.sql.SQLException e) {
+            e.printStackTrace();
+        }
+    }//GEN-LAST:event_getSingleStudentBtnActionPerformed
+
+
+    
+    private void getAllStudentsBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_getAllStudentsBtnActionPerformed
+
+        try  {
+            studentTable.getSelectionModel().clearSelection();
+
+            DefaultTableModel studentModel = (DefaultTableModel) studentTable.getModel();
+            ResultSet rs = controller.getAllStudents();
+
+            studentTable.setModel(resultSetToTableModel(rs));
+
+        } catch (java.sql.SQLException e) {
+            e.printStackTrace();
+        } catch (ArrayIndexOutOfBoundsException e) {
+            e.printStackTrace();
+        }
+    }//GEN-LAST:event_getAllStudentsBtnActionPerformed
+
+    private void getAllCoursesBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_getAllCoursesBtnActionPerformed
+        try  {
+            courseTable.getSelectionModel().clearSelection();
+
+            DefaultTableModel courseModel = (DefaultTableModel) courseTable.getModel();
+            ResultSet rs = controller.getAllCourses();
+
+            courseTable.setModel(resultSetToTableModel(rs));
+
+        } catch (java.sql.SQLException e) {
+            e.printStackTrace();
+        } catch (ArrayIndexOutOfBoundsException e) {
+            e.printStackTrace();
+        }
+    }//GEN-LAST:event_getAllCoursesBtnActionPerformed
+
+    private void addCourseBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addCourseBtnActionPerformed
+        addCourseDialog.setVisible(true);
+    }//GEN-LAST:event_addCourseBtnActionPerformed
+
+    private void addCourseFinalBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addCourseFinalBtnActionPerformed
+       try { 
+           String courseName = courseNameField.getText();
+           String coursePoints = coursePointsField.getText();
+           String courseSemester = courseSemesterField.getText();
+           
+           controller.insertCourse(courseName, coursePoints, courseSemester);
+           courseAddStatusLbl.setText("Addition perfomed");
+           addCourseDialog.dispose();
+        } catch (java.sql.SQLException e) {
+            e.printStackTrace();
+        }
+    }//GEN-LAST:event_addCourseFinalBtnActionPerformed
+
+    private void removeCourseBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeCourseBtnActionPerformed
+        String courseToRemove = JOptionPane
+        .showInputDialog(null, "Enter course ID for course REMOVAL (safety measure):", "Remove student", JOptionPane.PLAIN_MESSAGE);
+        try {
+            int intCourseToRemove = Integer.parseInt(courseToRemove);
+            controller.deleteCourse(intCourseToRemove);
+
+        } catch (java.sql.SQLException e) {
+            e.printStackTrace();
+        } catch (NumberFormatException e) {
+            System.out.println("This is not a number!");
+            System.out.println(e.getMessage());
+        }
+    }//GEN-LAST:event_removeCourseBtnActionPerformed
+
+    private void showThroughputCbActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showThroughputCbActionPerformed
+        try  {
+            if (showThroughputCb.isSelected()) {
+                courseTable.getSelectionModel().clearSelection();
+                ResultSet rs = controller.getCourseThroughput();
+
+                courseTable.setModel(resultSetToTableModel(rs));
+            } else {
+            courseTable.getSelectionModel().clearSelection();
+            ResultSet rs = controller.getAllCourses();
+
+            courseTable.setModel(resultSetToTableModel(rs));
+            }
+
+        } catch (java.sql.SQLException e) {
+            e.printStackTrace();
+        }
+    }//GEN-LAST:event_showThroughputCbActionPerformed
+
+    private void getCourseThroughputsBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_getCourseThroughputsBtnActionPerformed
+        try  {
+            courseTable.getSelectionModel().clearSelection();
+            ResultSet rs = controller.getCourseThroughput();
+
+            courseTable.setModel(resultSetToTableModel(rs));
+
+        } catch (java.sql.SQLException e) {
+            e.printStackTrace();
+        }
+    }//GEN-LAST:event_getCourseThroughputsBtnActionPerformed
 
     public static TableModel resultSetToTableModel(ResultSet rs) {
         try {
@@ -511,12 +1028,30 @@ public class testFrame extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton addCourseBtn;
+    private javax.swing.JDialog addCourseDialog;
+    private javax.swing.JButton addCourseFinalBtn;
     private javax.swing.JButton addStudent;
     private javax.swing.JButton addStudentBtn;
     private javax.swing.JDialog addStudentDialog;
+    private javax.swing.JLabel courseAddStatusLbl;
+    private javax.swing.JLabel courseIDLabel;
+    private javax.swing.JTextField courseIdentField;
+    private javax.swing.JTextField courseNameField;
+    private javax.swing.JLabel courseNameLbl;
+    private javax.swing.JTextField coursePointsField;
+    private javax.swing.JLabel coursePointsLbl;
+    private javax.swing.JTextField courseSemesterField;
+    private javax.swing.JTable courseTable;
+    private javax.swing.JButton getAllCoursesBtn;
     private javax.swing.JButton getAllStudentsBtn;
+    private javax.swing.JButton getCourseBtn;
+    private javax.swing.JButton getCourseThroughputsBtn;
     private javax.swing.JButton getSingleStudentBtn;
+    private javax.swing.JButton gradeStudentOnCourse;
+    private javax.swing.JLabel highestGradeStudentsLbl;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -524,19 +1059,28 @@ public class testFrame extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JScrollPane jScrollPane4;
+    private javax.swing.JScrollPane jScrollPane5;
+    private javax.swing.JScrollPane jScrollPane6;
     private javax.swing.JTabbedPane jTabbedPane1;
+    private javax.swing.JTable pastStudentsInCourseTable;
     private javax.swing.JTable readTable;
     private javax.swing.JTable readingTable;
     private javax.swing.JButton regStudentToCourseBtn;
-    private javax.swing.JDialog regStudentToCourseDialog;
+    private javax.swing.JButton removeCourseBtn;
     private javax.swing.JButton removeStudentBtn;
+    private javax.swing.JLabel semesterLbl;
+    private javax.swing.JCheckBox showThroughputCb;
     private javax.swing.JTextField studentAddressField;
     private javax.swing.JTextField studentIdentField;
     private javax.swing.JTextField studentNameField;
     private javax.swing.JTable studentTable;
+    private javax.swing.JLabel studentsInCourseLabel;
+    private javax.swing.JTable studentsInCourseTable;
     private javax.swing.JButton unregStudentFrCourseBtn;
     // End of variables declaration//GEN-END:variables
 }

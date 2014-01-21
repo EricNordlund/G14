@@ -87,6 +87,15 @@ public class Dal {
         
     }
     
+    public static boolean isNumeric(String str) {
+        try {  
+            double d = Double.parseDouble(str);  
+        } catch(NumberFormatException nfe) {  
+            return false;
+        }  
+        return true;  
+    }
+    
      /**
      * ********************************************************************************************
      * ********************************STUDENT QUERYS**********************************************
@@ -165,17 +174,17 @@ public class Dal {
      * @throws SQLException
      */
     public ResultSet searchForStudent(String searchString) throws SQLException {
-        String query = "SELECT * FROM student WHERE studentID LIKE '" + searchString +"' OR name LIKE '%" + searchString +"%' OR adress LIKE '%" + searchString +"%'";
-        ResultSet result = getQuery(query);
-        if(!result.next())
-        {
-            System.out.println("Search returned empty.");
-            return null;
+        String query;
+        
+        if (isNumeric(searchString)) {
+            query = "SELECT * FROM student WHERE studentID='" + searchString +"'";
+        } else {
+            query = "SELECT * FROM student WHERE name LIKE '%" + searchString +"%' OR adress LIKE '%" + searchString +"%'";
         }
+       
+        ResultSet result = getQuery(query);
         return result;       
     }
-    
-    
     
     /**
      * ********************************************************************************************
@@ -236,16 +245,37 @@ public class Dal {
         System.out.println("Removed course: " + courseId);
     }
 
+    public ResultSet getAllCourses() throws SQLException
+    {
+        String query = "SELECT courseID CourseID, name Name, points Points, semester Semester FROM course";
+        ResultSet result = getQuery(query);
+        System.out.println("Got course list.");
+        return result;  
+    }
+    
     /**
      * Hitta en kurs och dess information
      * @param courseId
      * @throws SQLException 
      */
-    public ResultSet findCourse(int courseId) throws SQLException {
-        String query = "select * from course where courseId = " + courseId;
+    public ResultSet getCourse(int courseId) throws SQLException {
+        String query = "select courseID CourseID, name Name, points Points, semester Semester from course where courseId = " + courseId;
         ResultSet result = getQuery(query);
         return result;
     }
+    
+    public ResultSet findCourse(String searchString) throws SQLException {
+        String query;
+        
+        if (isNumeric(searchString)) {
+            query = "SELECT * FROM course WHERE courseID='" + searchString +"'";
+        } else {
+            query = "SELECT * FROM course WHERE name LIKE '%" + searchString +"%' OR semester LIKE '%" + searchString +"%'";
+        }
+       
+        ResultSet result = getQuery(query);
+        return result; 
+    }  
 
     /**
      * Registrering av kurs
@@ -254,9 +284,10 @@ public class Dal {
      * @throws SQLException 
      */
     public void addCourse(String courseName,
-            String coursePoints) throws SQLException {
-        String query = "insert into student (courseName, coursePoints) values ('" + courseName + "', '" + coursePoints + "')";
+            String coursePoints, String courseSemester) throws SQLException {
+        String query = "insert into course (name, points, semester) values ('" + courseName + "','" + coursePoints + "','" + courseSemester + "')";
         sendQuery(query);
+        
         System.out.println("Registered new course: " + courseName);
     }
 
@@ -304,7 +335,7 @@ public class Dal {
      * @throws SQLException 
      */
     public ResultSet getPercentageAStudents(int courseID) throws SQLException {
-        String query = "SELECT (SELECT count(studentID) FROM haveRead WHERE courseID = '" + courseID + "' AND grade = '6') * 100 / (SELECT count(studentID) FROM haveRead WHERE courseID = '" + courseID + "') AS Percentage";
+        String query = "SELECT (SELECT count(studentID) FROM haveRead WHERE courseID = '" + courseID + "' AND grade = '5') * 100 / (SELECT count(studentID) FROM haveRead WHERE courseID = '" + courseID + "') AS Percentage";
         ResultSet result = getQuery(query);
         return result;            
     }   
@@ -339,6 +370,23 @@ public class Dal {
         return result; 
     }
     
+    public ResultSet getStudentsOngoingPoints(int studentID, String semester) throws SQLException {
+        String query = "SELECT SUM(cr.points) Points FROM course cr INNER JOIN (SELECT courseID, studentID FROM reading WHERE studentID = '" + studentID + "') AS rd ON cr.courseID = rd.courseID WHERE cr.semester='"+semester+"'";
+        ResultSet result = getQuery(query);
+        return result; 
+    }
+    
+    public ResultSet getCoursePoints(int courseID) throws SQLException {
+        String query = "select points from course where courseID="+courseID;
+        ResultSet result = getQuery(query);
+        return result; 
+    }
+    
+    public ResultSet getStudentsOngoingPoints2(int studentID, String semester) throws SQLException {
+        String query = "SELECT SUM(cr.points) Points FROM course cr INNER JOIN (SELECT courseID, studentID FROM reading WHERE studentID = '" + studentID + "') AS rd ON cr.courseID = rd.courseID INNER JOIN (SELECT courseID, semester FROM course WHERE semester = '" + semester + "') AS si ON si.courseID=cr.courseID";
+        ResultSet result = getQuery(query);
+        return result; 
+    }
     
     
 }
