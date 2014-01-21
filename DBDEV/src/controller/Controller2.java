@@ -84,6 +84,12 @@ public class Controller2 {
         return rs;
     }
     
+    public ResultSet getStudentsOngoingUngradedCourses(int studentID) throws SQLException {
+
+        ResultSet rs = dal.getStudentsOngoingUngradedCourses(studentID);
+        return rs;
+    }
+    
     public ResultSet getStudentsOngoingPoints(int studentID, String semester) throws SQLException {
 
         ResultSet rs = dal.getStudentsOngoingPoints(studentID, semester);
@@ -128,6 +134,10 @@ public class Controller2 {
     
     public void removeStudentReading(int studentID, int courseID) throws SQLException {
         dal.removeStudentReading(studentID, courseID);
+    }
+    
+    public void removeStudentTotalReading(int studentID) throws SQLException {
+        dal.removeStudentTotalReading(studentID);
     }
     
      public void addStudentRead(int studentID, int courseID, int grade) throws SQLException {

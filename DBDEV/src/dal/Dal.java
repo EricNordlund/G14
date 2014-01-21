@@ -204,6 +204,12 @@ public class Dal {
         System.out.println("Removed student from course.");
     }
     
+    public void removeStudentTotalReading(int studentID) throws SQLException {
+        String query = "DELETE FROM reading WHERE studentID = '" + studentID +"'";
+        sendQuery(query);
+        System.out.println("Removed student from courses.");
+    }
+    
     /**
      * ********************************************************************************************
      * ********************************Read Querys**********************************************
@@ -211,10 +217,10 @@ public class Dal {
      */
     
      public void addStudentRead(int studentID, int courseID, int grade) throws SQLException {
-        String query = "DELETE FROM reading WHERE studentID = '" + studentID +"' AND courseID = '" + courseID +"'";
-        sendQuery(query);
+        /*String query = "DELETE FROM reading WHERE studentID = '" + studentID +"' AND courseID = '" + courseID +"'";
+        sendQuery(query);*/
         
-        query = "INSERT INTO haveRead (studentID, courseID, grade) VALUES('" + studentID +"', '" + courseID +"', '" + grade +"')";
+        String query = "INSERT INTO haveRead (studentID, courseID, grade) VALUES('" + studentID +"', '" + courseID +"', '" + grade +"')";
         sendQuery(query);
         
         System.out.println("Ended course for student.");
@@ -366,6 +372,15 @@ public class Dal {
     
     public ResultSet getStudentsOngoingCourses(int studentID) throws SQLException {
         String query = "SELECT cr.courseID CourseID, cr.name Name, cr.points Points FROM course cr INNER JOIN (SELECT courseID, studentID FROM reading WHERE studentID = '" + studentID + "') AS rd ON cr.courseID = rd.courseID";
+        ResultSet result = getQuery(query);
+        return result; 
+    }
+    
+    public ResultSet getStudentsOngoingUngradedCourses(int studentID) throws SQLException {
+        String query = "SELECT tb1.courseID, tb1.name, tb1.points FROM (SELECT cr.courseID CourseID, cr.name Name, cr.points Points FROM course cr INNER JOIN (SELECT courseID, studentID FROM reading WHERE studentID = "+studentID+") AS rd ON cr.courseID = rd.courseID) AS tb1\n" +
+"LEFT OUTER JOIN (SELECT cr.courseID CourseID, cr.name Name, grade Grade FROM course cr INNER JOIN (SELECT courseID, grade FROM haveRead WHERE studentID = "+studentID+") AS rd ON cr.courseID = rd.courseID) AS tb2\n" +
+"ON tb1.name = tb2.name\n" +
+"WHERE tb2.courseID IS null";
         ResultSet result = getQuery(query);
         return result; 
     }
