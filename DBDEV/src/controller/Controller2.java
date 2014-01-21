@@ -96,6 +96,12 @@ public class Controller2 {
         return rs;
     }
     
+    public ResultSet searchStudentsCompletedCourses(int studentID, String courseSearch) throws SQLException {
+
+        ResultSet rs = dal.searchStudentsCompletedCourses(studentID, courseSearch);
+        return rs;
+    }
+    
     public ResultSet getCoursePoints(int courseID) throws SQLException {
 
         ResultSet rs = dal.getCoursePoints(courseID);

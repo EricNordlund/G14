@@ -370,6 +370,12 @@ public class Dal {
         return result; 
     }
     
+    public ResultSet searchStudentsCompletedCourses(int studentID, String courseSearch) throws SQLException {
+        String query = "SELECT cr.courseID CourseID, cr.name Name, grade Grade FROM course cr INNER JOIN (SELECT courseID, grade FROM haveRead WHERE studentID = '" + studentID + "') AS rd ON cr.courseID = rd.courseID WHERE (cr.courseID='"+courseSearch+"' OR cr.name LIKE '%"+courseSearch+"%')";
+        ResultSet result = getQuery(query);
+        return result; 
+    }
+    
     public ResultSet getStudentsOngoingCourses(int studentID) throws SQLException {
         String query = "SELECT cr.courseID CourseID, cr.name Name, cr.points Points FROM course cr INNER JOIN (SELECT courseID, studentID FROM reading WHERE studentID = '" + studentID + "') AS rd ON cr.courseID = rd.courseID";
         ResultSet result = getQuery(query);
