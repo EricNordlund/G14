@@ -268,7 +268,7 @@ public class DAL {
      * @throws SQLException
      */
     public void removeCourse(int courseId) throws SQLException {
-        String query = "delete from course where courseId = " + courseId;
+        String query = "DELETE FROM course WHERE courseId = " + courseId;
         sendQuery(query);
         System.out.println("Removed course: " + courseId);
     }
@@ -291,7 +291,7 @@ public class DAL {
      * @throws SQLException
      */
     public ResultSet getCourse(int courseId) throws SQLException {
-        String query = "select courseID CourseID, name Name, points Points, semester Semester from course where courseId = " + courseId;
+        String query = "SELECT courseID CourseID, name Name, points Points, semester Semester FROM course WHERE courseId = " + courseId;
         ResultSet result = getQuery(query);
         return result;
     }
@@ -323,7 +323,7 @@ public class DAL {
      */
     public void addCourse(String courseName,
             String coursePoints, String courseSemester) throws SQLException {
-        String query = "insert into course (name, points, semester) values ('" + courseName + "','" + coursePoints + "','" + courseSemester + "')";
+        String query = "INSERT INTO course (name, points, semester) VALUES ('" + courseName + "','" + coursePoints + "','" + courseSemester + "')";
         sendQuery(query);
 
         System.out.println("Registered new course: " + courseName);
@@ -459,7 +459,7 @@ public class DAL {
      * @throws SQLException 
      */
     public ResultSet getCoursePoints(int courseID) throws SQLException {
-        String query = "select points from course where courseID=" + courseID;
+        String query = "SELECT points FROM course where courseID=" + courseID;
         ResultSet result = getQuery(query);
         return result;
     }
