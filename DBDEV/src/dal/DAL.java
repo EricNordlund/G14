@@ -48,7 +48,7 @@ public class DAL {
 
     /**
      * Opens connection to SQL server with JDBC 4.0
-     * @return En SQL-Anslutning
+     * @return
      * @throws SQLException
      */
     private static Connection openConnection() throws SQLException {
@@ -117,8 +117,8 @@ public class DAL {
 
     /**
      * Returns all personal student information from a single student.
-     * @param studentID ID på den student som är av intresse.
-     * @return Samtliga data i form av ett resultset.
+     * @param studentID
+     * @return
      * @throws SQLException
      */
     public ResultSet getSingleStudent(int studentID) throws SQLException {
@@ -359,7 +359,7 @@ public class DAL {
      * @throws SQLException
      */
     public ResultSet getAStudents(int courseID) throws SQLException {
-        String query = "SELECT st.studentID StudentID, st.name Name FROM student st INNER JOIN (SELECT studentID FROM haveRead WHERE courseID = '" + courseID + "' AND grade = '6') AS rd ON st.studentID = rd.studentID";
+        String query = "SELECT st.studentID StudentID, st.name Name FROM student st INNER JOIN (SELECT studentID FROM haveRead WHERE courseID = '" + courseID + "' AND grade = '5') AS rd ON st.studentID = rd.studentID";
         ResultSet result = getQuery(query);
         return result;
     }
@@ -371,7 +371,7 @@ public class DAL {
      * @throws SQLException
      */
     public ResultSet getPercentageAStudents(int courseID) throws SQLException {
-        String query = "SELECT (SELECT count(studentID) FROM haveRead WHERE courseID = '" + courseID + "' AND grade = '5') * 100 / (SELECT count(studentID) FROM haveRead WHERE courseID = '" + courseID + "') AS Percentage";
+        String query = "SELECT (SELECT COUNT(studentID) FROM haveRead WHERE courseID = '" + courseID + "' AND grade = '5') * 100 / (SELECT COUNT(studentID) FROM haveRead WHERE courseID = '" + courseID + "') AS Percentage";
         ResultSet result = getQuery(query);
         return result;
     }
@@ -382,7 +382,7 @@ public class DAL {
      * @throws SQLException
      */
     public ResultSet getCourseThroughput() throws SQLException {
-        String query = "SELECT courseID CourseID, count(studentID) Students FROM (SELECT * FROM haveRead WHERE grade > 0) AS CD GROUP BY courseID ORDER BY Students DESC";
+        String query = "SELECT courseID CourseID, COUNT(studentID) Students FROM (SELECT * FROM haveRead WHERE grade > 0) AS CD GROUP BY courseID ORDER BY Students DESC";
         ResultSet result = getQuery(query);
         return result;
     }
@@ -431,10 +431,10 @@ public class DAL {
      * @throws SQLException 
      */
     public ResultSet getStudentsOngoingUngradedCourses(int studentID) throws SQLException {
-        String query = "SELECT tb1.courseID, tb1.name, tb1.points FROM (SELECT cr.courseID CourseID, cr.name Name, cr.points Points FROM course cr INNER JOIN (SELECT courseID, studentID FROM reading WHERE studentID = " + studentID + ") AS rd ON cr.courseID = rd.courseID) AS tb1\n"
-                + "LEFT OUTER JOIN (SELECT cr.courseID CourseID, cr.name Name, grade Grade FROM course cr INNER JOIN (SELECT courseID, grade FROM haveRead WHERE studentID = " + studentID + ") AS rd ON cr.courseID = rd.courseID) AS tb2\n"
-                + "ON tb1.name = tb2.name\n"
-                + "WHERE tb2.courseID IS null";
+        String query = "SELECT tbo.courseID courseID, tbo.name Name, tbo.points Points FROM (SELECT cr.courseID CourseID, cr.name Name, cr.points Points FROM course cr INNER JOIN (SELECT courseID, studentID FROM reading WHERE studentID = " + studentID + ") AS rd ON cr.courseID = rd.courseID) AS tbo\n"
+                + "LEFT OUTER JOIN (SELECT cr.courseID CourseID, cr.name Name, grade Grade FROM course cr INNER JOIN (SELECT courseID, grade FROM haveRead WHERE studentID = " + studentID + ") AS rd ON cr.courseID = rd.courseID) AS tbt\n"
+                + "ON tbo.name = tbt.name\n"
+                + "WHERE tbt.courseID IS null";
         ResultSet result = getQuery(query);
         return result;
     }
@@ -459,7 +459,7 @@ public class DAL {
      * @throws SQLException 
      */
     public ResultSet getCoursePoints(int courseID) throws SQLException {
-        String query = "SELECT points FROM course where courseID=" + courseID;
+        String query = "SELECT points FROM course WHERE courseID=" + courseID;
         ResultSet result = getQuery(query);
         return result;
     }

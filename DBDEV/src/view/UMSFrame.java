@@ -90,28 +90,26 @@ public class UMSFrame extends javax.swing.JFrame {
 
                             // Get and display A grade students
                             ResultSet rsAStudentsPercent = controller.getPercentage5Students(selValue);
+                            
                             String arrAPercent = null;
-                 
+
                                 while (rsAStudentsPercent.next()) {
                                     String em = rsAStudentsPercent.getString("Percentage");
-                                    arrAPercent = em.replace("\n", ",");
+                                    arrAPercent = em.replace("\n", "");
                                 }
-                            
 
-                            System.out.println("arrAPercent: " + arrAPercent);
-                            
                                 double dAPercent = Double.parseDouble(arrAPercent);
                                 DecimalFormat df = new DecimalFormat("##.###");
                                 String aStudentsPercent = String.valueOf(df.format(dAPercent));
 
                                 highestGradeStudentsLbl.setText("A grade students: " + aStudentsPercent + "%");
-                            
 
                         } catch (java.sql.SQLException e) {
                             System.out.println("SQL-exception!");
                         } catch (ArrayIndexOutOfBoundsException e) {
                             System.out.println("ArrayIndexOutOfBoundsException!");
                         } catch (Exception e) {
+                            highestGradeStudentsLbl.setText("A grade students: 0%");
                             System.out.println("Exception!");
                         }
                     }
