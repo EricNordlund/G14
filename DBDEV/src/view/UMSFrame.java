@@ -5,7 +5,7 @@
  */
 package view;
 
-import controller.Controller2;
+import controller.Controller;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import javax.swing.table.*;
@@ -23,11 +23,11 @@ import javax.swing.JTextField;
  *
  * @author Olle
  */
-public class testFrame extends javax.swing.JFrame {
+public class UMSFrame extends javax.swing.JFrame {
 
-    private Controller2 controller; // Koppling till klassen Controller
+    private Controller controller;
 
-    public void setController(Controller2 controller) {
+    public void setController(Controller controller) {
         this.controller = controller;
 
     }
@@ -35,35 +35,33 @@ public class testFrame extends javax.swing.JFrame {
     /**
      * Creates new form testFrame
      */
-    public testFrame() {
+    public UMSFrame() {
         initComponents();
+        // Remove preset text in textfield on focus
         filterCoursesField.addFocusListener(new FocusAdapter() {
             public void focusGained(FocusEvent fEvt) {
-                JTextField tField = (JTextField)fEvt.getSource();
+                JTextField tField = (JTextField) fEvt.getSource();
                 tField.setText("");
             }
         });
-        
+
+        // Listen for selection changes in student table
         studentTable.getSelectionModel()
                 .addListSelectionListener(new ListSelectionListener() {
                     @Override
                     public void valueChanged(ListSelectionEvent event) {
 
                         try {
+                            // Update reading and read tables
                             int viewRow = studentTable.getSelectedRow();
-                            System.out.println("viewRow: " + viewRow);
-
                             Object selValueObj = studentTable.getValueAt(viewRow, 0);
                             int selValue = (Integer) selValueObj;
-                            System.out.println("value changed!" + selValue);
 
-                            DefaultTableModel readingModel = (DefaultTableModel) readingTable.getModel();
                             ResultSet rsReading = controller.getStudentsOngoingUngradedCourses(selValue);
-                            readingTable.setModel(resultSetToTableModel(rsReading));
+                            readingTable.setModel(rsToTableModel(rsReading));
 
-                            DefaultTableModel readModel = (DefaultTableModel) readTable.getModel();
                             ResultSet rsRead = controller.getStudentResults(selValue);
-                            readTable.setModel(resultSetToTableModel(rsRead));
+                            readTable.setModel(rsToTableModel(rsRead));
                         } catch (java.sql.SQLException e) {
                             e.printStackTrace();
                         } catch (ArrayIndexOutOfBoundsException e) {
@@ -72,51 +70,49 @@ public class testFrame extends javax.swing.JFrame {
                     }
                 });
 
+        // Listen for selection changes in course table
         courseTable.getSelectionModel()
                 .addListSelectionListener(new ListSelectionListener() {
                     @Override
                     public void valueChanged(ListSelectionEvent event) {
 
                         try {
+                            // Update tables for current and past students
                             int viewRow = courseTable.getSelectedRow();
                             Object selValueObj = courseTable.getValueAt(viewRow, 0);
                             int selValue = (Integer) selValueObj;
 
-                            DefaultTableModel studentsInCourseModel = (DefaultTableModel) studentsInCourseTable.getModel();
                             ResultSet rsStudents = controller.getReadingStudents(selValue);
-                            studentsInCourseTable.setModel(resultSetToTableModel(rsStudents));
+                            studentsInCourseTable.setModel(rsToTableModel(rsStudents));
 
-                            DefaultTableModel pastStudentsInCourseModel = (DefaultTableModel) pastStudentsInCourseTable.getModel();
                             ResultSet rsPastStudents = controller.getCourseResult(selValue);
-                            pastStudentsInCourseTable.setModel(resultSetToTableModel(rsPastStudents));
+                            pastStudentsInCourseTable.setModel(rsToTableModel(rsPastStudents));
 
                             // Get and display A grade students
                             ResultSet rsAStudentsPercent = controller.getPercentage5Students(selValue);
-                            
                             String arrAPercent = null;
-                            if (!rsAStudentsPercent.next()) {
-
-                             } else {
+                 
                                 while (rsAStudentsPercent.next()) {
-                                String em = rsAStudentsPercent.getString("Percentage");
-                                arrAPercent = em.replace("\n", ",");
-                                 }
-                            }
+                                    String em = rsAStudentsPercent.getString("Percentage");
+                                    arrAPercent = em.replace("\n", ",");
+                                }
                             
-                            System.out.println("arrAPercent: "+arrAPercent);
-                            if (arrAPercent != null && !arrAPercent.isEmpty()) {
+
+                            System.out.println("arrAPercent: " + arrAPercent);
+                            
                                 double dAPercent = Double.parseDouble(arrAPercent);
                                 DecimalFormat df = new DecimalFormat("##.###");
                                 String aStudentsPercent = String.valueOf(df.format(dAPercent));
 
-                                highestGradeStudentsLbl.setText("A grade students: " + aStudentsPercent + "%"); }
+                                highestGradeStudentsLbl.setText("A grade students: " + aStudentsPercent + "%");
                             
+
                         } catch (java.sql.SQLException e) {
-                            e.printStackTrace();
+                            System.out.println("SQL-exception!");
                         } catch (ArrayIndexOutOfBoundsException e) {
-                            e.printStackTrace();
+                            System.out.println("ArrayIndexOutOfBoundsException!");
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            System.out.println("Exception!");
                         }
                     }
                 });
@@ -146,7 +142,6 @@ public class testFrame extends javax.swing.JFrame {
         semesterLbl = new javax.swing.JLabel();
         courseSemesterField = new javax.swing.JTextField();
         addCourseFinalBtn = new javax.swing.JButton();
-        courseAddStatusLbl = new javax.swing.JLabel();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         jPanel1 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -249,8 +244,6 @@ public class testFrame extends javax.swing.JFrame {
             }
         });
 
-        courseAddStatusLbl.setText("Status: nothing added");
-
         javax.swing.GroupLayout addCourseDialogLayout = new javax.swing.GroupLayout(addCourseDialog.getContentPane());
         addCourseDialog.getContentPane().setLayout(addCourseDialogLayout);
         addCourseDialogLayout.setHorizontalGroup(
@@ -258,9 +251,6 @@ public class testFrame extends javax.swing.JFrame {
             .addGroup(addCourseDialogLayout.createSequentialGroup()
                 .addGap(20, 20, 20)
                 .addGroup(addCourseDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(addCourseDialogLayout.createSequentialGroup()
-                        .addGap(6, 6, 6)
-                        .addComponent(courseAddStatusLbl))
                     .addComponent(addCourseFinalBtn)
                     .addGroup(addCourseDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                         .addComponent(semesterLbl)
@@ -288,12 +278,11 @@ public class testFrame extends javax.swing.JFrame {
                 .addComponent(courseSemesterField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(addCourseFinalBtn)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(courseAddStatusLbl)
-                .addContainerGap(8, Short.MAX_VALUE))
+                .addContainerGap(36, Short.MAX_VALUE))
         );
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setTitle("University Management System");
 
         studentTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -685,87 +674,110 @@ public class testFrame extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-
     private void addStudentActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addStudentActionPerformed
         String studentName = studentNameField.getText();
         String studentAddress = studentAddressField.getText();
         try {
-            controller.insertStudent(studentName, studentAddress);
-            
-            // Update reading table
-            ResultSet rs = controller.getAllStudents();
-            studentTable.setModel(resultSetToTableModel(rs));
+            // If all information is entered, insert student
+            if (!studentName.equals("") || !studentAddress.equals("")) {
+                controller.insertStudent(studentName, studentAddress);
+
+                // Update reading table
+                ResultSet rs = controller.getAllStudents();
+                studentTable.setModel(rsToTableModel(rs));
+                
+                addStudentDialog.dispose();
+            // Else, display error message
+            } else {
+                JOptionPane.showMessageDialog(null, "You must enter values for all fields!", "Error", JOptionPane.PLAIN_MESSAGE);
+            }
         } catch (java.sql.SQLException e) {
-            e.printStackTrace();
+            System.out.println("SQL exception!");
         }
     }//GEN-LAST:event_addStudentActionPerformed
 
+    // Search for course (ID, name or address) and display results in table
     private void getCourseBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_getCourseBtnActionPerformed
         try {
             String courseInfo = courseIdentField.getText();
 
             courseTable.getSelectionModel().clearSelection();
             ResultSet rs = controller.findCourse(courseInfo);
-            courseTable.setModel(resultSetToTableModel(rs));
+            courseTable.setModel(rsToTableModel(rs));
 
         } catch (java.sql.SQLException e) {
             e.printStackTrace();
         }
     }//GEN-LAST:event_getCourseBtnActionPerformed
 
+    // Grade student and add course to completed courses
     private void gradeStudentOnCourseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_gradeStudentOnCourseActionPerformed
         try {
+            // Get selected course
             int courseRowIndex = readingTable.getSelectedRow();
             Object selCourseIDObj = readingTable.getValueAt(courseRowIndex, 0);
             int selCourse = (Integer) selCourseIDObj;
 
+            // Get selected student
             int studentRowIndex = studentTable.getSelectedRow();
             Object selStudentObj = studentTable.getValueAt(studentRowIndex, 0);
             int selStudent = (Integer) selStudentObj;
 
+            // Display input dialog for grade and insert course into read table
             String grade = JOptionPane
                     .showInputDialog(null, "Enter grade for student " + selStudent + " in course " + selCourse, "Grade student", JOptionPane.PLAIN_MESSAGE);
             int intGrade = Integer.parseInt(grade);
             /*controller.removeStudentReading(selStudent, selCourse);*/
             controller.addStudentRead(selStudent, selCourse, intGrade);
-            
+
             // Update reading table
             ResultSet rsReading = controller.getStudentsOngoingUngradedCourses(selStudent);
-            readingTable.setModel(resultSetToTableModel(rsReading));
-            
+            readingTable.setModel(rsToTableModel(rsReading));
+
             // Update read table
             ResultSet rsRead = controller.getStudentResults(selStudent);
-            readTable.setModel(resultSetToTableModel(rsRead));
+            readTable.setModel(rsToTableModel(rsRead));
         } catch (java.sql.SQLException e) {
             e.printStackTrace();
+        } catch (ArrayIndexOutOfBoundsException e) {
+            // Display error message
+            JOptionPane.showMessageDialog(null, "Select a student & course first from the tables!", "Error", JOptionPane.PLAIN_MESSAGE);
+            System.out.println("Index out of bounds!");
+            System.out.println(e.getMessage());
         }
     }//GEN-LAST:event_gradeStudentOnCourseActionPerformed
 
+    // Unregister student from course in reading table
     private void unregStudentFrCourseBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_unregStudentFrCourseBtnActionPerformed
         try {
+            // Get course ID
             int courseRowIndex = readingTable.getSelectedRow();
             Object selCourseIDObj = readingTable.getValueAt(courseRowIndex, 0);
             int selCourse = (Integer) selCourseIDObj;
 
+            // Get student ID
             int studentRowIndex = studentTable.getSelectedRow();
             Object selStudentObj = studentTable.getValueAt(studentRowIndex, 0);
             int selStudent = (Integer) selStudentObj;
 
+            // Remove from reading table
             controller.removeStudentReading(selStudent, selCourse);
-            
+
             // Update reading table
             ResultSet rsReading = controller.getStudentsOngoingUngradedCourses(selStudent);
-            readingTable.setModel(resultSetToTableModel(rsReading));
+            readingTable.setModel(rsToTableModel(rsReading));
 
         } catch (java.sql.SQLException e) {
             e.printStackTrace();
         } catch (ArrayIndexOutOfBoundsException e) {
-            JOptionPane.showMessageDialog(null, "You must select a course for deletion in the students courses list.", "Error", JOptionPane.PLAIN_MESSAGE);
+            // Display error messeage if nothing selected
+            JOptionPane.showMessageDialog(null, "You must select a course for deletion in the students ongoing courses table.", "Error", JOptionPane.PLAIN_MESSAGE);
             System.out.println("Index out of bounds!");
             System.out.println(e.getMessage());
         }
     }//GEN-LAST:event_unregStudentFrCourseBtnActionPerformed
 
+    // Return corresponding semester from number
     private String NumberToSemester(int nr) {
         String semester = null;
 
@@ -778,39 +790,28 @@ public class testFrame extends javax.swing.JFrame {
         return semester;
     }
 
+    // Return current semester based on current date
+    // and it's classification
     private String getSemester() {
         String timeStamp = new SimpleDateFormat("yyyy-MM-dd.").format(Calendar.getInstance().getTime());
         String semester = null;
         String currentMonth = timeStamp.substring(5, 7);
 
-        /*System.out.print("current date: "+timeStamp);*/
-        String temp = currentMonth.substring(0, 1);
-
-        if (temp.equals("0")) {
-
-            String singleNr = currentMonth.substring(0, 2);
-            int intSingleNr = Integer.parseInt(singleNr);
-            System.out.print("current month: " + intSingleNr);
-
-            semester = NumberToSemester(intSingleNr);
-
-        } else {
-            int nr = Integer.parseInt(currentMonth);
-            semester = NumberToSemester(nr);
-        }
+        int nr = Integer.parseInt(currentMonth);
+        semester = NumberToSemester(nr);
 
         return semester;
     }
 
+    // Return an int from inputed resultset (for point values)
     private int rsToInt(ResultSet rSet, String column) {
         int returnInt = 0;
 
         try {
-
             String tempString = null;
             while (rSet.next()) {
-                String em2 = rSet.getString(column);
-                tempString = em2.replace("\n", ",");
+                String em = rSet.getString(column);
+                tempString = em.replace("\n", "");
                 System.out.println(tempString);
             }
 
@@ -823,12 +824,12 @@ public class testFrame extends javax.swing.JFrame {
 
     }
 
+    // Register student to course
     private void regStudentToCourseBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_regStudentToCourseBtnActionPerformed
 
         try {
             int rowIndex = studentTable.getSelectedRow();
             Object selValueObj = studentTable.getValueAt(rowIndex, 0);
-
             String selValue = selValueObj.toString();
 
             String courseCode = JOptionPane
@@ -848,6 +849,8 @@ public class testFrame extends javax.swing.JFrame {
                 studentPoints = rsToInt(rsPoints, "Points");
             } catch (java.sql.SQLException e) {
                 e.printStackTrace();
+            } catch (NullPointerException e) {
+                System.out.println("NullPointerException!");
             }
 
             try {
@@ -855,36 +858,38 @@ public class testFrame extends javax.swing.JFrame {
                 coursePoints = rsToInt(rsCoursePoints, "Points");
             } catch (java.sql.SQLException e) {
                 e.printStackTrace();
+            } catch (NullPointerException e) {
+                System.out.println("NullPointerException!");
             }
 
-            /*int coursePoints = rsToInt(rsCoursePoints, "Points");*/
+            // For 45 hp limit per semester
             if (studentPoints > (45 - coursePoints)) {
                 JOptionPane.showMessageDialog(null, "You cannot register for more than 45hp/semester", "Error", JOptionPane.PLAIN_MESSAGE);
             } else {
                 try {
-                controller.addStudentReading(intSelValue, intCourseCode);
-                
-                // Update reading table
-                ResultSet rs = controller.getStudentsOngoingUngradedCourses(intSelValue);
-                readingTable.setModel(resultSetToTableModel(rs));
-                
+                    controller.addStudentReading(intSelValue, intCourseCode);
+
+                    // Update reading table
+                    ResultSet rs = controller.getStudentsOngoingUngradedCourses(intSelValue);
+                    readingTable.setModel(rsToTableModel(rs));
+
                 } catch (java.sql.SQLException e) {
                     e.printStackTrace();
+                }  catch (NullPointerException e) {
+                    System.out.println("NullPointerException!");
                 }
             }
 
-            /*controller.addStudentReading(intSelValue, intCourseCode);*/
         } catch (NumberFormatException e) {
             System.out.println("This is not a number!");
             System.out.println(e.getMessage());
         } catch (ArrayIndexOutOfBoundsException e) {
             JOptionPane.showMessageDialog(null, "Select a student first from the table!", "Error", JOptionPane.PLAIN_MESSAGE);
-            System.out.println("Index out of bounds!");
-            System.out.println(e.getMessage());
         }
 
     }//GEN-LAST:event_regStudentToCourseBtnActionPerformed
 
+    // Remove a student (with safety measure)
     private void removeStudentBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeStudentBtnActionPerformed
 
         String removedStudent = JOptionPane
@@ -895,7 +900,7 @@ public class testFrame extends javax.swing.JFrame {
 
             // Update reading table
             ResultSet rs = controller.getAllStudents();
-            studentTable.setModel(resultSetToTableModel(rs));
+            studentTable.setModel(rsToTableModel(rs));
         } catch (java.sql.SQLException e) {
             e.printStackTrace();
         } catch (NumberFormatException e) {
@@ -907,6 +912,7 @@ public class testFrame extends javax.swing.JFrame {
         addStudentDialog.setVisible(true);
     }//GEN-LAST:event_addStudentBtnActionPerformed
 
+    // Search for a specific student and return result in students table
     private void getSingleStudentBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_getSingleStudentBtnActionPerformed
 
         try {
@@ -914,23 +920,21 @@ public class testFrame extends javax.swing.JFrame {
 
             studentTable.getSelectionModel().clearSelection();
             ResultSet rs = controller.searchForStudent(studentInfo);
-            studentTable.setModel(resultSetToTableModel(rs));
+            studentTable.setModel(rsToTableModel(rs));
 
         } catch (java.sql.SQLException e) {
             e.printStackTrace();
         }
     }//GEN-LAST:event_getSingleStudentBtnActionPerformed
 
-
+    // Display all students in students table
     private void getAllStudentsBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_getAllStudentsBtnActionPerformed
 
         try {
             studentTable.getSelectionModel().clearSelection();
-
-            DefaultTableModel studentModel = (DefaultTableModel) studentTable.getModel();
             ResultSet rs = controller.getAllStudents();
 
-            studentTable.setModel(resultSetToTableModel(rs));
+            studentTable.setModel(rsToTableModel(rs));
 
         } catch (java.sql.SQLException e) {
             e.printStackTrace();
@@ -939,14 +943,12 @@ public class testFrame extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_getAllStudentsBtnActionPerformed
 
+    // Display all courses in courses table
     private void getAllCoursesBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_getAllCoursesBtnActionPerformed
         try {
-            courseTable.getSelectionModel().clearSelection();
 
-            DefaultTableModel courseModel = (DefaultTableModel) courseTable.getModel();
             ResultSet rs = controller.getAllCourses();
-
-            courseTable.setModel(resultSetToTableModel(rs));
+            courseTable.setModel(rsToTableModel(rs));
 
         } catch (java.sql.SQLException e) {
             e.printStackTrace();
@@ -955,10 +957,12 @@ public class testFrame extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_getAllCoursesBtnActionPerformed
 
+    // Display course addition dialog
     private void addCourseBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addCourseBtnActionPerformed
         addCourseDialog.setVisible(true);
     }//GEN-LAST:event_addCourseBtnActionPerformed
 
+    // Add course
     private void addCourseFinalBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addCourseFinalBtnActionPerformed
         try {
             String courseName = courseNameField.getText();
@@ -967,60 +971,74 @@ public class testFrame extends javax.swing.JFrame {
 
             if (!courseName.equals("") || !coursePoints.equals("") || !courseSemester.equals("")) {
                 controller.insertCourse(courseName, coursePoints, courseSemester);
+                
+                // Update course table
+                ResultSet rsCourse = controller.getAllCourses();
+                courseTable.setModel(rsToTableModel(rsCourse));
+
+                addCourseDialog.dispose();
             } else {
                 JOptionPane.showMessageDialog(null, "You must enter values for all fields!", "Error", JOptionPane.PLAIN_MESSAGE);
             }
-            
-            // Update course table
-            ResultSet rsCourse = controller.getAllCourses();
-            courseTable.setModel(resultSetToTableModel(rsCourse));
-            
-            courseAddStatusLbl.setText("Addition perfomed");
-            addCourseDialog.dispose();
+
+
         } catch (java.sql.SQLException e) {
-            e.printStackTrace();
+            System.out.println("SQLException!");
         }
     }//GEN-LAST:event_addCourseFinalBtnActionPerformed
 
+    // Remove a course (with safety measure)
     private void removeCourseBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeCourseBtnActionPerformed
         String courseToRemove = JOptionPane
                 .showInputDialog(null, "Enter course ID for course REMOVAL (safety measure):", "Remove course", JOptionPane.PLAIN_MESSAGE);
         try {
             int intCourseToRemove = Integer.parseInt(courseToRemove);
             controller.deleteCourse(intCourseToRemove);
-            
+
             // Update course table
+            courseTable.getSelectionModel().clearSelection();
             ResultSet rsCourse = controller.getAllCourses();
-            courseTable.setModel(resultSetToTableModel(rsCourse));
+            courseTable.setModel(rsToTableModel(rsCourse));
 
         } catch (java.sql.SQLException e) {
-            e.printStackTrace();
-        } catch (NumberFormatException e) {
+            System.out.println("SQLException!");
+        } catch (ArrayIndexOutOfBoundsException e) {
+            System.out.println("ArrayIndexOutOfBoundsException!");
+        }
+        catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(null, "No value entered!", "Error", JOptionPane.PLAIN_MESSAGE);
         }
     }//GEN-LAST:event_removeCourseBtnActionPerformed
 
+    // Display complete courses throughput in the courses table
     private void getCourseThroughputsBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_getCourseThroughputsBtnActionPerformed
         try {
             courseTable.getSelectionModel().clearSelection();
             ResultSet rs = controller.getCourseThroughput();
 
-            courseTable.setModel(resultSetToTableModel(rs));
+            courseTable.setModel(rsToTableModel(rs));
 
         } catch (java.sql.SQLException e) {
             e.printStackTrace();
         }
     }//GEN-LAST:event_getCourseThroughputsBtnActionPerformed
 
+    // Empty the reading table for a student
     private void markStudentSemesterDoneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_markStudentSemesterDoneActionPerformed
         try {
             int rowIndex = studentTable.getSelectedRow();
             Object selValueObj = studentTable.getValueAt(rowIndex, 0);
-            
+
             int studentID = (Integer) selValueObj;
             controller.removeStudentTotalReading(studentID);
+            
+            ResultSet rs = controller.getStudentsOngoingUngradedCourses(studentID);
+            readingTable.setModel(rsToTableModel(rs));
+            
         } catch (java.sql.SQLException e) {
             e.printStackTrace();
+        } catch (ArrayIndexOutOfBoundsException e) {
+            JOptionPane.showMessageDialog(null, "Select a student first from the student table!", "Error", JOptionPane.PLAIN_MESSAGE);
         }
     }//GEN-LAST:event_markStudentSemesterDoneActionPerformed
 
@@ -1028,51 +1046,56 @@ public class testFrame extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_filterCoursesFieldActionPerformed
 
+    // Search a students completed courses
     private void filterCoursesBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_filterCoursesBtnActionPerformed
         try {
             int rowIndex = studentTable.getSelectedRow();
             Object selValueObj = studentTable.getValueAt(rowIndex, 0);
             int studentID = (Integer) selValueObj;
-            
+
             readTable.getSelectionModel().clearSelection();
-            String searchString =filterCoursesField.getText();
-            
-            DefaultTableModel readModel = (DefaultTableModel) readTable.getModel();
+            String searchString = filterCoursesField.getText();
+
             ResultSet rs = controller.searchStudentsCompletedCourses(studentID, searchString);
 
-            readTable.setModel(resultSetToTableModel(rs));
+            readTable.setModel(rsToTableModel(rs));
 
         } catch (java.sql.SQLException e) {
             e.printStackTrace();
         }
     }//GEN-LAST:event_filterCoursesBtnActionPerformed
 
-    public static TableModel resultSetToTableModel(ResultSet rs) {
+    // Return TableModel from ResultSet
+    public static TableModel rsToTableModel(ResultSet rs) {
         try {
             ResultSetMetaData metaData = rs.getMetaData();
-            int numberOfColumns = metaData.getColumnCount();
+            int nrOfColumns = metaData.getColumnCount();
             Vector columnNames = new Vector();
-
-            // Get the column names
-            for (int column = 0; column < numberOfColumns; column++) {
+            int column = 0;
+            
+            // Gets all column names
+            while (column < nrOfColumns) {
                 columnNames.addElement(metaData.getColumnLabel(column + 1));
+                column++;
             }
 
-            // Get all rows.
+            // Gets all rows
             Vector rows = new Vector();
 
             while (rs.next()) {
                 Vector newRow = new Vector();
-
-                for (int i = 1; i <= numberOfColumns; i++) {
-                    newRow.addElement(rs.getObject(i));
+                
+                column = 1;
+                while (column <= nrOfColumns) {
+                    newRow.addElement(rs.getObject(column));
+                    column++;
                 }
 
                 rows.addElement(newRow);
             }
 
             return new DefaultTableModel(rows, columnNames);
-        } catch (Exception e) {
+        } catch (SQLException e) {
             e.printStackTrace();
 
             return null;
@@ -1096,21 +1119,20 @@ public class testFrame extends javax.swing.JFrame {
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(testFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(UMSFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(testFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(UMSFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(testFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(UMSFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(testFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(UMSFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
 
-        /*studentTable.setModel(tableModel);*/
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new testFrame().setVisible(true);
+                new UMSFrame().setVisible(true);
             }
         });
     }
@@ -1122,7 +1144,6 @@ public class testFrame extends javax.swing.JFrame {
     private javax.swing.JButton addStudent;
     private javax.swing.JButton addStudentBtn;
     private javax.swing.JDialog addStudentDialog;
-    private javax.swing.JLabel courseAddStatusLbl;
     private javax.swing.JLabel courseIDLabel;
     private javax.swing.JTextField courseIdentField;
     private javax.swing.JTextField courseNameField;

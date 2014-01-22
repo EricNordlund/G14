@@ -3,27 +3,28 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package view;
-import controller.Controller2;
-import dal.Dal;
-import java.sql.ResultSet;
+
+import controller.Controller;
+import dal.DAL;
 import java.sql.SQLException;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import javax.swing.JFrame;
 import javax.swing.UIManager;
+
 /**
  *
  * @author Olle
  */
-public class testMain {
-    
-    testFrame myFrame;
-    
-    public testMain() {
-        myFrame = new testFrame();
-        
+public class UMSApplication {
+
+    UMSFrame myFrame;
+
+    public UMSApplication() {
+        myFrame = new UMSFrame();
+
+        // Adjust frame size (if necessary) and position
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         Dimension frameSize = myFrame.getSize();
 
@@ -36,38 +37,35 @@ public class testMain {
         }
 
         myFrame.setLocation((screenSize.width - frameSize.width) / 2,
-        (screenSize.height - frameSize.height) / 2);
+                (screenSize.height - frameSize.height) / 2);
 
+        // Exit on close
         myFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        // Finally make frame visible
         myFrame.setVisible(true);
     }
-    
+
     public static void main(String[] args) throws SQLException {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception e) {
             e.printStackTrace();
         }
-        
-        testMain testM = new testMain();
-        testM.link();
+
+        // Create app and link together DAL, controller & view
+        UMSApplication myApp = new UMSApplication();
+        myApp.link();
 
     }
-    
+
     private void link() throws SQLException {
-        Dal dal = new Dal();
+        DAL dal = new DAL();
 
-        Controller2 controller = new Controller2(dal);
-        
+        Controller controller = new Controller(dal);
+
         myFrame.setController(controller);
-        
-        /*controller.insertStudent("Kalle","Orsa");*/
-        ResultSet rs = controller.getStudent(921028);
-       if(rs.next()) {
-            System.out.println(rs.getString(1)+rs.getString(2)
-            +rs.getString(3));
-        }
-        
+
     }
-    
+
 }
